@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from "typeorm";
 import { User } from "./user";
+import { CreateDateColumn as TypeOrmCreateDateColumn } from "typeorm";
 
 @Entity()
 export class Loan {
@@ -8,6 +9,9 @@ export class Loan {
 
   @Column("decimal")
   amount!: number;
+
+  @ManyToOne(() => User)
+  borrower!: User;
 
   @Column("decimal")
   collateralAmount!: number;
@@ -18,9 +22,17 @@ export class Loan {
   @Column()
   interestRate!: number;
 
+  @Column({ default: "pending" }) // "pending", "approved", "repaid", "liquidated"
+  status!: string;
+
   @Column()
   dueDate!: Date;
 
-  @Column()
-  status!: string;  // active, repaid, defaulted
+  @CreateDateColumn()
+  createdAt!: Date;
+
 }
+function CreateDateColumn(): PropertyDecorator {
+    return TypeOrmCreateDateColumn();
+}
+

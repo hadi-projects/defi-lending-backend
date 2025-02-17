@@ -6,9 +6,10 @@ import passport from "./config/auth";
 import authRoutes from "./router/auth";
 import depositRoutes from "./router/deposit";
 import loanRoutes from "./router/loan";
+import { AppDataSource } from "./data-source";
 
 const app = express();
-const port = process.env.PORT || 3030;
+const port = process.env.PORT;
 
 // Middleware
 app.use(json());
@@ -22,19 +23,16 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Database connection
-createConnection().then(() => {
-  console.log("Connected to PostgreSQL");
-}).catch((error) => {
-  console.error("Error connecting to PostgreSQL", error);
-});
 
 // Routes
 app.use("/auth", authRoutes);
 app.use("/api/deposit", depositRoutes);
 app.use("/api/loan", loanRoutes);
 
-// Start the server
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
-});
+
+AppDataSource.initialize()
+  .then(() => {
+    console.log("Database connected successfully!");
+    app.listen(process.env.PORT, () => console.log("Server running on port 3030"));
+  })
+  .catch((error) => console.log("Database connection error:", error));
