@@ -7,6 +7,11 @@ const router = Router();
 
 // POST request to create a loan
 router.post("/:userId", authenticateJWT, LoanController.createLoan);
+router.get("/", authenticateJWT, LoanController.getAllLoans);
+router.post("/", authenticateJWT, LoanController.requestLoan);
+router.put("/:id/approve", authenticateJWT, LoanController.approveLoan);
+router.put("/:id/repay", authenticateJWT, LoanController.repayLoan);
+
 
 export default router;
 

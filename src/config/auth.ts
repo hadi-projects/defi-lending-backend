@@ -1,6 +1,6 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
-import { getRepository } from "typeorm";
+import { AppDataSource } from "../data-source"; // Pastikan AppDataSource diimpor
 import { User } from "../model/user";
 import dotenv from "dotenv";
 
@@ -15,13 +15,13 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        const userRepository = getRepository(User);
+        const userRepository = AppDataSource.getRepository(User); // FIXED: Menggunakan AppDataSource
         let user = await userRepository.findOne({ where: { googleId: profile.id } });
 
         if (!user) {
           user = userRepository.create({
             googleId: profile.id,
-            username: profile.displayName,
+            name: profile.displayName,
             email: profile.emails?.[0].value,
           });
           await userRepository.save(user);
@@ -40,7 +40,7 @@ passport.serializeUser((user: any, done) => {
 });
 
 passport.deserializeUser(async (id: string, done) => {
-  const userRepository = getRepository(User);
+  const userRepository = AppDataSource.getRepository(User); // FIXED: Menggunakan AppDataSource
   try {
     const user = await userRepository.findOne({ where: { id: Number(id) } });
     done(null, user);

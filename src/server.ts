@@ -1,21 +1,21 @@
 import express from "express";
 import { json } from "body-parser";
-import { createConnection } from "typeorm";
 import session from "express-session";
 import passport from "./config/auth";
 import authRoutes from "./router/auth";
 import depositRoutes from "./router/deposit";
 import loanRoutes from "./router/loan";
+import userRoutes from "./router/user"; // FIXED: Import dari user, bukan loan
 import { AppDataSource } from "./data-source";
 
 const app = express();
-const port = process.env.PORT;
+const port = process.env.PORT || 3030; // FIXED: Default ke 3030 jika tidak ada .env
 
 // Middleware
 app.use(json());
 app.use(
   session({
-    secret: process.env.JWT_SECRET!,
+    secret: process.env.JWT_SECRET || "default_secret", // FIXED: Tambahkan fallback jika .env tidak diatur
     resave: false,
     saveUninitialized: false,
   })
@@ -23,16 +23,17 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-
-// Routes
-app.use("/auth", authRoutes);
-app.use("/api/deposit", depositRoutes);
-app.use("/api/loan", loanRoutes);
-
-
+// Inisialisasi Database
 AppDataSource.initialize()
   .then(() => {
-    console.log("Database connected successfully!");
-    app.listen(process.env.PORT, () => console.log("Server running on port 3030"));
+    console.log("📦 Database connected successfully!");
+
+    // Routes
+    app.use("/auth", authRoutes);
+    app.use("/api/deposit", depositRoutes);
+    app.use("/api/loan", loanRoutes);
+    app.use("/api/users", userRoutes);
+
+    app.listen(port, () => console.log(`🚀 Server running on port ${port}`));
   })
-  .catch((error) => console.log("Database connection error:", error));
+  .catch((error) => console.error("❌ Database connection error:", error));
